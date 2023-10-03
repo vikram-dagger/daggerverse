@@ -1,7 +1,7 @@
 dagger query << EOF
 query {
   trivy {
-    check(repository:"https://github.com/dagger/hello-dagger.git", path: "/src") {
+    check(repository:"https://github.com/snyk-labs/nodejs-goof.git", path: "/src") {
       stdout
     }
   } 
@@ -11,7 +11,7 @@ EOF
 dagger query << EOF
 query {
   snyk {
-    check(token: "TOKEN", repository:"https://github.com/dagger/hello-dagger.git", path: "/src") {
+    check(token: "TOKEN", repository:"https://github.com/snyk-labs/nodejs-goof.git", path: "/src") {
       stdout
     }
   } 
@@ -21,7 +21,7 @@ EOF
 dagger query << EOF
 query {
   vuln {
-    check(scanner: "trivy", {repository:"https://github.com/dagger/hello-dagger.git", path: "/src"}) {
+    check(scanner: "trivy", {repository:"https://github.com/snyk-labs/nodejs-goof.git", path: "/src"}) {
       stdout
     }
   } 
