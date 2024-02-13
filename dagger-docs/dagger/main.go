@@ -14,7 +14,7 @@ func (m *DaggerDocs) Deploy(source *Directory, project string, location string, 
 
 	ctx := context.Background()
 
-	build := dag.Container().
+	build, err := dag.Container().
 		From("node:21").
 		WithDirectory("/home/node", source).
 		WithWorkdir("/home/node/docs").
