@@ -1,0 +1,12 @@
+{
+  "name": "dagger-docs",
+  "sdk": "go",
+  "dependencies": [
+    {
+      "name": "google-cloud-run",
+      "source": "github.com/vikram-dagger/daggerverse/google-cloud-run@2126911a02c7eedb60ca10c08e751adb553027ac"
+    }
+  ],
+  "source": "dagger",
+  "engineVersion": "v0.9.9"
+}
