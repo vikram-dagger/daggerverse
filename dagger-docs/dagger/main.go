@@ -8,19 +8,16 @@ import (
 
 type DaggerDocs struct {}
 
-// example usage:
-func (m *DaggerDocs) Deploy(project string, location string, repository string, credential *Secret) (string, error) {
+// example usage
+// dagger -m github.com/vikram-dagger/daggerverse/dagger-docs call deploy --project vikram-experiments --location us-central1 --repository vikram-test --credential env:GOOGLE_CREDENTIAL
+func (m *DaggerDocs) Deploy(source *Directory, project string, location string, repository string, credential *Secret) (string, error) {
 
 	ctx := context.Background()
 
-	tree := dag.Git("https://github.com/dagger/dagger").
-		Branch("main").
-		Tree()
-
 	build := dag.Container().
 		From("node:21").
-		WithDirectory("/home/node", tree).
-		WithWorkdir("/home/node/docs").
+		WithDirectory("/home/node", source).
+		WithWorkdir("/home/node").
 		WithMountedCache("/src/node_modules", dag.CacheVolume("node-21-modules")).
 		WithExec([]string{"npm", "install"}).
 		WithExec([]string{"npm", "run", "build"}).
