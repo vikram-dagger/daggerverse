@@ -19,7 +19,8 @@ func (m *DaggerDocs) Deploy(source *Directory, project string, location string, 
 		WithDirectory("/home/node", source).
 		WithWorkdir("/home/node/docs").
 		WithMountedCache("/src/node_modules", dag.CacheVolume("node-21-modules")).
-		WithExec([]string{"npm", "install"}).
+		//WithExec([]string{"npm", "install"}).
+		WithExec([]string{"ls", "-al"}).
 		Stdout(ctx)
 		//WithExec([]string{"npm", "install"}).
 		//WithExec([]string{"npm", "run", "build"}).
