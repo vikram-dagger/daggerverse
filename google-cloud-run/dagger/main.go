@@ -14,10 +14,10 @@ import (
 
 type GoogleCloudRun struct {}
 
-// dagger -m github.com/vikram-dagger/daggerverse/google-cloud-run call deploy --project vikram-experiments --location us-central1 --image docker.io/nginx --port 80 --credential env:GOOGLE_CREDENTIAL
+// dagger -m github.com/vikram-dagger/daggerverse/google-cloud-run call deploy --project vikram-experiments --location us-central1 --image docker.io/nginx --http-port 80 --credential env:GOOGLE_CREDENTIAL
 
-// dagger -m github.com/vikram-dagger/daggerverse/google-cloud-run call deploy --project vikram-experiments --location us-central1 --image docker.io/httpd --port 80 --credential env:GOOGLE_CREDENTIAL
-func (m *GoogleCloudRun) Deploy(project string, location string, image string, port int32, credential *Secret) (string, error) {
+// dagger -m github.com/vikram-dagger/daggerverse/google-cloud-run call deploy --project vikram-experiments --location us-central1 --image docker.io/httpd --http-port 80 --credential env:GOOGLE_CREDENTIAL
+func (m *GoogleCloudRun) Deploy(project string, location string, image string, httpPort int32, credential *Secret) (string, error) {
 	ctx := context.Background()
 	json, err := credential.Plaintext(ctx)
 	b := []byte(json)
@@ -41,7 +41,7 @@ func (m *GoogleCloudRun) Deploy(project string, location string, image string, p
 						Ports: []*runpb.ContainerPort{
 							{
 								Name:          "http1",
-								ContainerPort: port,
+								ContainerPort: httpPort,
 							},
 						},
 					},
