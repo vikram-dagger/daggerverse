@@ -3528,7 +3528,9 @@ type GoogleCloudRun struct {
 	id     *GoogleCloudRunID
 }
 
-func (r *GoogleCloudRun) Deploy(ctx context.Context, project string, location string, image string, port int, credential *Secret) (string, error) {
+// dagger -m github.com/vvaswani/daggerverse/google-cloud-run call deploy --project vikram-experiments --location us-central1 --image docker.io/nginx --http-port 80 --credential env:GOOGLE_CREDENTIAL
+// dagger -m github.com/vvaswani/daggerverse/google-cloud-run call deploy --project vikram-experiments --location us-central1 --image docker.io/httpd --http-port 80 --credential env:GOOGLE_CREDENTIAL
+func (r *GoogleCloudRun) Deploy(ctx context.Context, project string, location string, image string, httpPort int, credential *Secret) (string, error) {
 	assertNotNil("credential", credential)
 	if r.deploy != nil {
 		return *r.deploy, nil
@@ -3537,7 +3539,7 @@ func (r *GoogleCloudRun) Deploy(ctx context.Context, project string, location st
 	q = q.Arg("project", project)
 	q = q.Arg("location", location)
 	q = q.Arg("image", image)
-	q = q.Arg("port", port)
+	q = q.Arg("httpPort", httpPort)
 	q = q.Arg("credential", credential)
 
 	var response string
@@ -6789,41 +6791,48 @@ func invoke(ctx context.Context, parentJSON []byte, parentName string, fnName st
 	switch parentName {
 	case "DaggerDocs":
 		switch fnName {
-		case "ContainerEcho":
+		case "Deploy":
 			var parent DaggerDocs
 			err = json.Unmarshal(parentJSON, &parent)
 			if err != nil {
 				panic(fmt.Errorf("%s: %w", "failed to unmarshal parent object", err))
 			}
-			var stringArg string
-			if inputArgs["stringArg"] != nil {
-				err = json.Unmarshal([]byte(inputArgs["stringArg"]), &stringArg)
+			var source *Directory
+			if inputArgs["source"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["source"]), &source)
 				if err != nil {
-					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg stringArg", err))
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg source", err))
 				}
 			}
-			return (*DaggerDocs).ContainerEcho(&parent, stringArg), nil
-		case "GrepDir":
-			var parent DaggerDocs
-			err = json.Unmarshal(parentJSON, &parent)
-			if err != nil {
-				panic(fmt.Errorf("%s: %w", "failed to unmarshal parent object", err))
-			}
-			var directoryArg *Directory
-			if inputArgs["directoryArg"] != nil {
-				err = json.Unmarshal([]byte(inputArgs["directoryArg"]), &directoryArg)
+			var project string
+			if inputArgs["project"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["project"]), &project)
 				if err != nil {
-					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg directoryArg", err))
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg project", err))
 				}
 			}
-			var pattern string
-			if inputArgs["pattern"] != nil {
-				err = json.Unmarshal([]byte(inputArgs["pattern"]), &pattern)
+			var location string
+			if inputArgs["location"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["location"]), &location)
 				if err != nil {
-					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg pattern", err))
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg location", err))
 				}
 			}
-			return (*DaggerDocs).GrepDir(&parent, ctx, directoryArg, pattern)
+			var repository string
+			if inputArgs["repository"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["repository"]), &repository)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg repository", err))
+				}
+			}
+			var credential *Secret
+			if inputArgs["credential"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["credential"]), &credential)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg credential", err))
+				}
+			}
+			return (*DaggerDocs).Deploy(&parent, source, project, location, repository, credential)
 		default:
 			return nil, fmt.Errorf("unknown function %s", fnName)
 		}
@@ -6832,16 +6841,14 @@ func invoke(ctx context.Context, parentJSON []byte, parentName string, fnName st
 			WithObject(
 				dag.TypeDef().WithObject("DaggerDocs").
 					WithFunction(
-						dag.Function("ContainerEcho",
-							dag.TypeDef().WithObject("Container")).
-							WithDescription("example usage: \"dagger call container-echo --string-arg yo stdout\"").
-							WithArg("stringArg", dag.TypeDef().WithKind(StringKind))).
-					WithFunction(
-						dag.Function("GrepDir",
+						dag.Function("Deploy",
 							dag.TypeDef().WithKind(StringKind)).
-							WithDescription("example usage: \"dagger call grep-dir --directory-arg . --pattern GrepDir\"").
-							WithArg("directoryArg", dag.TypeDef().WithObject("Directory")).
-							WithArg("pattern", dag.TypeDef().WithKind(StringKind)))), nil
+							WithDescription("example usage\ndagger -m github.com/vikram-dagger/daggerverse/dagger-docs call deploy --source ./dagger --project vikram-experiments --location us-central1 --repository vikram-test --credential env:GOOGLE_CREDENTIAL").
+							WithArg("source", dag.TypeDef().WithObject("Directory")).
+							WithArg("project", dag.TypeDef().WithKind(StringKind)).
+							WithArg("location", dag.TypeDef().WithKind(StringKind)).
+							WithArg("repository", dag.TypeDef().WithKind(StringKind)).
+							WithArg("credential", dag.TypeDef().WithObject("Secret")))), nil
 	default:
 		return nil, fmt.Errorf("unknown object %s", parentName)
 	}
