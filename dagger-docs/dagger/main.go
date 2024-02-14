@@ -9,7 +9,7 @@ import (
 type DaggerDocs struct {}
 
 // example usage
-// dagger -m github.com/vikram-dagger/daggerverse/dagger-docs call deploy --source ./dagger --project vikram-experiments --location us-central1 --repository vikram-test --credential env:GOOGLE_CREDENTIAL
+// dagger -m github.com/vikram-dagger/daggerverse/dagger-docs call deploy --source ./dagger --project user-experiments --location us-central1 --repository user-test --credential env:GOOGLE_CREDENTIAL
 func (m *DaggerDocs) Deploy(source *Directory, project string, location string, repository string, credential *Secret) (string, error) {
 
 	ctx := context.Background()
