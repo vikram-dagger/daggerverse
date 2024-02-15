@@ -4,7 +4,7 @@
   "dependencies": [
     {
       "name": "google-cloud-run",
-      "source": "github.com/vvaswani/daggerverse/google-cloud-run@ed0cc2cf60b2da6bd601f77ed7eac8cf39f6fee4"
+      "source": "github.com/vvaswani/daggerverse/google-cloud-run@954b41485806b30cf55618b01e16f0e64e79e0e5"
     }
   ],
   "source": "dagger",
