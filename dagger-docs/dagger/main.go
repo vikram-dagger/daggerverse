@@ -34,5 +34,5 @@ func (m *DaggerDocs) Deploy(source *Directory, project string, location string, 
 		panic(err)
 	}
 
-	return dag.GoogleCloudRun().Deploy(ctx, project, location, address, 80, credential)
+	return dag.GoogleCloudRun().CreateService(ctx, project, location, address, 80, credential)
 }
