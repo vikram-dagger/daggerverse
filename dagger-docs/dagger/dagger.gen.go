@@ -1213,6 +1213,40 @@ func (r *Container) WithFile(path string, source *File, opts ...ContainerWithFil
 	}
 }
 
+// ContainerWithFilesOpts contains options for Container.WithFiles
+type ContainerWithFilesOpts struct {
+	// Permission given to the copied files (e.g., 0600).
+	Permissions int
+	// A user:group to set for the files.
+	//
+	// The user and group can either be an ID (1000:1000) or a name (foo:bar).
+	//
+	// If the group is omitted, it defaults to the same as the user.
+	Owner string
+}
+
+// Retrieves this container plus the contents of the given files copied to the given path.
+func (r *Container) WithFiles(path string, sources []*File, opts ...ContainerWithFilesOpts) *Container {
+	q := r.q.Select("withFiles")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `permissions` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Permissions) {
+			q = q.Arg("permissions", opts[i].Permissions)
+		}
+		// `owner` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Owner) {
+			q = q.Arg("owner", opts[i].Owner)
+		}
+	}
+	q = q.Arg("path", path)
+	q = q.Arg("sources", sources)
+
+	return &Container{
+		q: q,
+		c: r.c,
+	}
+}
+
 // Indicate that subsequent operations should be featured more prominently in the UI.
 func (r *Container) WithFocus() *Container {
 	q := r.q.Select("withFocus")
@@ -2119,6 +2153,30 @@ func (r *Directory) WithFile(path string, source *File, opts ...DirectoryWithFil
 	}
 	q = q.Arg("path", path)
 	q = q.Arg("source", source)
+
+	return &Directory{
+		q: q,
+		c: r.c,
+	}
+}
+
+// DirectoryWithFilesOpts contains options for Directory.WithFiles
+type DirectoryWithFilesOpts struct {
+	// Permission given to the copied files (e.g., 0600).
+	Permissions int
+}
+
+// Retrieves this directory plus the contents of the given files copied to the given path.
+func (r *Directory) WithFiles(path string, sources []*File, opts ...DirectoryWithFilesOpts) *Directory {
+	q := r.q.Select("withFiles")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `permissions` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Permissions) {
+			q = q.Arg("permissions", opts[i].Permissions)
+		}
+	}
+	q = q.Arg("path", path)
+	q = q.Arg("sources", sources)
 
 	return &Directory{
 		q: q,
@@ -3524,18 +3582,18 @@ type GoogleCloudRun struct {
 	q *querybuilder.Selection
 	c graphql.Client
 
-	deploy *string
-	id     *GoogleCloudRunID
+	createService *string
+	id            *GoogleCloudRunID
+	updateService *string
 }
 
-// dagger -m github.com/vvaswani/daggerverse/google-cloud-run call deploy --project vikram-experiments --location us-central1 --image docker.io/nginx --http-port 80 --credential env:GOOGLE_CREDENTIAL
-// dagger -m github.com/vvaswani/daggerverse/google-cloud-run call deploy --project vikram-experiments --location us-central1 --image docker.io/httpd --http-port 80 --credential env:GOOGLE_CREDENTIAL
-func (r *GoogleCloudRun) Deploy(ctx context.Context, project string, location string, image string, httpPort int, credential *Secret) (string, error) {
+// dagger -m github.com/vvaswani/daggerverse/google-cloud-run call create-service --project vikram-experiments --location us-central1 --image docker.io/httpd --http-port 80 --credential env:GOOGLE_CREDENTIAL
+func (r *GoogleCloudRun) CreateService(ctx context.Context, project string, location string, image string, httpPort int, credential *Secret) (string, error) {
 	assertNotNil("credential", credential)
-	if r.deploy != nil {
-		return *r.deploy, nil
+	if r.createService != nil {
+		return *r.createService, nil
 	}
-	q := r.q.Select("deploy")
+	q := r.q.Select("createService")
 	q = q.Arg("project", project)
 	q = q.Arg("location", location)
 	q = q.Arg("image", image)
@@ -3595,6 +3653,25 @@ func (r *GoogleCloudRun) UnmarshalJSON(bs []byte) error {
 	}
 	*r = *dag.LoadGoogleCloudRunFromID(GoogleCloudRunID(id))
 	return nil
+}
+
+func (r *GoogleCloudRun) UpdateService(ctx context.Context, project string, location string, service string, image string, httpPort int, credential *Secret) (string, error) {
+	assertNotNil("credential", credential)
+	if r.updateService != nil {
+		return *r.updateService, nil
+	}
+	q := r.q.Select("updateService")
+	q = q.Arg("project", project)
+	q = q.Arg("location", location)
+	q = q.Arg("service", service)
+	q = q.Arg("image", image)
+	q = q.Arg("httpPort", httpPort)
+	q = q.Arg("credential", credential)
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
 }
 
 // A graphql input type, which is essentially just a group of named args.
@@ -6843,7 +6920,7 @@ func invoke(ctx context.Context, parentJSON []byte, parentName string, fnName st
 					WithFunction(
 						dag.Function("Deploy",
 							dag.TypeDef().WithKind(StringKind)).
-							WithDescription("example usage\ndagger -m github.com/vikram-dagger/daggerverse/dagger-docs call deploy --source ./dagger --project vikram-experiments --location us-central1 --repository vikram-test --credential env:GOOGLE_CREDENTIAL").
+							WithDescription("example usage\ndagger -m github.com/vikram-dagger/daggerverse/dagger-docs call deploy --source ./dagger --project user-experiments --location us-central1 --repository user-test --credential env:GOOGLE_CREDENTIAL").
 							WithArg("source", dag.TypeDef().WithObject("Directory")).
 							WithArg("project", dag.TypeDef().WithKind(StringKind)).
 							WithArg("location", dag.TypeDef().WithKind(StringKind)).
