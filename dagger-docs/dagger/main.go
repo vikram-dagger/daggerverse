@@ -1,3 +1,9 @@
+// A module to deploy the Dagger documentation as a Google Cloud Run service
+//
+// This module contains functions to build a static site containing the Dagger
+// documentation, and then deploy the static site to Google Cloud Run
+//
+
 package main
 
 import (
@@ -9,8 +15,11 @@ import (
 
 type DaggerDocs struct{}
 
-// example usage
-// dagger -m github.com/vikram-dagger/daggerverse/dagger-docs call deploy --source ./dagger --project user-experiments --location us-central1 --repository user-test --credential env:GOOGLE_CREDENTIAL
+// Deploys a source Directory containing a static website to an
+// existing Google Cloud Run service
+//
+// example:
+// dagger call deploy --source ./docs --project user-project --location us-central1 --repository user-repo --credential env:GOOGLE_CREDENTIAL
 func (m *DaggerDocs) Deploy(source *Directory, project string, location string, repository string, credential *Secret) (string, error) {
 	ctx := context.Background()
 
@@ -30,8 +39,11 @@ func (m *DaggerDocs) Deploy(source *Directory, project string, location string, 
 	return dag.GoogleCloudRun().CreateService(ctx, project, location, address, 80, credential)
 }
 
-// example usage
-// dagger -m github.com/vikram-dagger/daggerverse/dagger-docs call build --source ./dagger
+// Builds a static docs website from a source Directory
+// and returns a Directory containing the build result
+//
+// example:
+// dagger call build --source ./docs
 func (m *DaggerDocs) Build(source *Directory) *Directory {
 	return dag.Container().
 		From("node:21").
