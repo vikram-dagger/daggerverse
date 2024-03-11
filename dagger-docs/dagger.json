@@ -7,6 +7,6 @@
       "source": "github.com/vvaswani/daggerverse/google-cloud-run@954b41485806b30cf55618b01e16f0e64e79e0e5"
     }
   ],
-  "source": "dagger",
+  "source": ".",
   "engineVersion": "v0.9.10"
 }
