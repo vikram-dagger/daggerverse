@@ -1,4 +1,7 @@
-// A module with various filesystem utility functions
+// A module with various file/directory utility functions
+//
+// This module demonstrates directory arguments and return values
+//
 
 package main
 
