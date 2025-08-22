@@ -1,9 +1,0 @@
-{
-  "name": "fileutils",
-  "sdk": "go",
-  "root-for": [
-    {
-      "source": "."
-    }
-  ]
-}
