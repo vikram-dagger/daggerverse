@@ -81,7 +81,7 @@ class SymfonyBlueprint
             // install test runner
             ->withExec(['composer', 'require', '--dev', 'phpunit/phpunit'])
             // run unit tests
-            ->withExec(['./bin/phpunit'])
+            ->withExec(['./vendor/bin/phpunit'])
             // install static analyzer
             ->withExec(['composer', 'require', '--dev', 'phpstan/phpstan'])
             // run static analysis
