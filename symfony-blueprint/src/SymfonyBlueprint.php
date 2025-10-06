@@ -78,6 +78,8 @@ class SymfonyBlueprint
             ->withExec(['./bin/console', 'doctrine:schema:drop', '--force'])
             ->withExec(['./bin/console', 'doctrine:schema:create'])
             ->withExec(['./bin/console', '-n', 'doctrine:fixtures:load'])
+            // install test runner
+            ->withExec(['composer', 'require', '--dev', 'phpunit/phpunit'])
             // run unit tests
             ->withExec(['./bin/phpunit'])
             // install static analyzer
