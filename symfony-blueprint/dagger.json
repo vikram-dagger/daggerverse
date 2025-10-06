@@ -1,0 +1,7 @@
+{
+  "name": "symfony-blueprint",
+  "engineVersion": "v0.18.16",
+  "sdk": {
+    "source": "php"
+  }
+}
