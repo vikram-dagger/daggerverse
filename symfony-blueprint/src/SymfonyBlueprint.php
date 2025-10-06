@@ -110,6 +110,6 @@ class SymfonyBlueprint
         return $this
             ->env()
             ->withEntrypoint(['/root/.symfony5/bin/symfony', 'server:start', '--port=8000', '--listen-ip=0.0.0.0'])
-            ->publish('ttl.sh/symfony-sample-app-'  . rand(0, 100000));
+            ->publish('ttl.sh/symfony-app-'  . rand(0, 100000));
     }
 }
