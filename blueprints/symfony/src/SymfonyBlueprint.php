@@ -19,7 +19,7 @@ class SymfonyBlueprint
 
   #[DaggerFunction]
   public function __construct(
-      #[DefaultPath(".")]
+      #[DefaultPath('.')]
       public Directory $source,
       public string $version = '8.3'
   ) {
@@ -34,20 +34,20 @@ class SymfonyBlueprint
             // use php base image
             ->from('php:' . $this->version . '-cli')
             // mount caches
-            ->withMountedCache("/root/.composer", dag()->cacheVolume("composer-php83"))
-            ->withMountedCache("/var/cache/apt", dag()->cacheVolume("apt"))
-            ->withExec(["apt-get", "update"])
+            ->withMountedCache('/root/.composer', dag()->cacheVolume('composer-php' . $this->version))
+            ->withMountedCache('/var/cache/apt', dag()->cacheVolume('apt'))
+            ->withExec(['apt-get', 'update'])
             // install system deps
-            ->withExec(["apt-get", "install", "--yes", "git-core", "zip", "curl"])
+            ->withExec(['apt-get', 'install', '--yes', 'git-core', 'zip', 'curl'])
             // install php deps
-            ->withExec(["docker-php-ext-install", "pdo_mysql"])
+            ->withExec(['docker-php-ext-install', 'pdo_mysql'])
             // install composer
-            ->withExec(["sh", "-c", "curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer"])
+            ->withExec(['sh', '-c', 'curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer'])
             // mount source code and set workdir
-            ->withDirectory("/app", $this->source->withoutDirectory(".dagger"))
-            ->withWorkdir("/app")
+            ->withDirectory('/app', $this->source->withoutDirectory('.dagger'))
+            ->withWorkdir('/app')
             // install app deps
-            ->withExec(["composer", "install"])
+            ->withExec(['composer', 'install'])
             // install symfony cli
             ->withExec(['sh', '-c', 'curl -sS https://get.symfony.com/cli/installer | bash']);
     }
@@ -56,28 +56,11 @@ class SymfonyBlueprint
     #[Doc('Returns the result of unit tests and static analysis')]
     public function test(): string {
 
-        $mariadb = dag()
-            ->container()
-            // use mariadb image
-            ->from("mariadb:11.6")
-            // create default db for tests
-            // as per symfony conventions, db name is with _test suffix)
-            ->withEnvVariable("MARIADB_DATABASE", "app_test")
-            ->withEnvVariable("MARIADB_ROOT_PASSWORD", "guessme")
-            ->withExposedPort(3306)
-            // start service
-            ->asService([], true);
 
         return $this
             ->env()
-            // bind to mariadb service
-            ->withServiceBinding('db', $mariadb)
             // set env=test
             ->withEnvVariable('APP_ENV', 'test')
-            // populate db with test data
-            ->withExec(['./bin/console', 'doctrine:schema:drop', '--force'])
-            ->withExec(['./bin/console', 'doctrine:schema:create'])
-            ->withExec(['./bin/console', '-n', 'doctrine:fixtures:load'])
             // install test runner
             ->withExec(['composer', 'require', '--dev', 'phpunit/phpunit'])
             // run unit tests
